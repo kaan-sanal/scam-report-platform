@@ -47,6 +47,7 @@ class ScamReport(models.Model):
     flagged_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='flagged_reports')
     verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='verified_reports')
     verification_date = models.DateTimeField(null=True, blank=True)
+    views = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title

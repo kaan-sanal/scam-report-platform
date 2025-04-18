@@ -4,181 +4,226 @@
 {% block content %}
 {% csrf_token %}
 <div class="container mt-4">
-    <div class="card mb-4">
-        <div class="card-header">
-            <h2>{{ report.title }}</h2>
-            <div class="text-muted">
-                <small>Posted by {{ report.user.email }} on {{ report.created_at|date:"F d, Y" }}</small>
-                <span class="badge {% if report.status == 'verified' %}bg-success{% elif report.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
-                    {{ report.get_status_display }}
-                </span>
-            </div>
-        </div>
-        <div class="card-body">
-            <p class="card-text">{{ report.description }}</p>
-            
-
-            <div class="evidence-section mb-4">
-                <h4>Evidence</h4>
-                {% if report.evidence.all %}
-                    <div class="list-group">
-                        {% for evidence in report.evidence.all %}
-                            <div class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1">
-                                            {{ evidence.title }}
-                                            {% if evidence.is_verified %}
-                                                <span class="badge bg-success">Verified</span>
-                                            {% else %}
-                                                <span class="badge bg-warning">Pending</span>
-                                            {% endif %}
-                                        </h6>
-                                        <p class="mb-1">{{ evidence.description }}</p>
-                                        <small class="text-muted">Submitted by {{ evidence.user.email }} on {{ evidence.created_at|date:"F d, Y" }}</small>
-                                    </div>
-                                    <div>
-                                        {% if evidence.file %}
-                                            <a href="{{ evidence.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">View File</a>
-                                        {% endif %}
-                                        {% if user.is_staff and not evidence.is_verified %}
-                                            <form method="post" action="{% url 'verify_evidence' evidence.id %}" class="d-inline">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-success">Verify</button>
-                                            </form>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>{{ report.title }}</h2>
+                    <div class="text-muted">
+                        <small>Posted by {{ report.user.email }} on {{ report.created_at|date:"F d, Y" }}</small>
+                        <span class="badge {% if report.status == 'verified' %}bg-success{% elif report.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ report.get_status_display }}
+                        </span>
                     </div>
-                {% else %}
-                    <p class="text-muted">No evidence has been submitted yet.</p>
-                {% endif %}
-
-                {% if user.is_authenticated %}
-                    <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addEvidenceModal">
-                        Add Evidence
-                    </button>
-                {% endif %}
-            </div>
-
-
-            <div class="comments-section mb-4">
-                <h4>Comments</h4>
-                {% if report.comments.all %}
-                    <div class="list-group">
-                        {% for comment in report.comments.all %}
-                            <div class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <p class="mb-1">
-                                            {{ comment.content }}
-                                            {% if comment.is_verified %}
-                                                <span class="badge bg-success">Verified</span>
-                                            {% else %}
-                                                <span class="badge bg-warning">Pending</span>
-                                            {% endif %}
-                                        </p>
-                                        <small class="text-muted">Posted by {{ comment.user.email }} on {{ comment.created_at|date:"F d, Y" }}</small>
-                                    </div>
-                                    {% if user.is_staff and not comment.is_verified %}
-                                        <form method="post" action="{% url 'verify_comment' comment.id %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-sm btn-success">Verify</button>
-                                        </form>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-muted">No comments yet.</p>
-                {% endif %}
-
-                {% if user.is_authenticated %}
-                    <form method="post" action="{% url 'add_comment' report.id %}" class="mt-3">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <textarea class="form-control" name="content" rows="3" placeholder="Add a comment..." required></textarea>
+                </div>
+                <div class="card-body">
+                    <h5>Description</h5>
+                    <p>{{ report.description }}</p>
+                    
+                    <h5>Scam Website URL</h5>
+                    <p><a href="{{ report.scam_url }}" target="_blank">{{ report.scam_url }}</a></p>
+                    
+                    {% if url_analysis %}
+                    <div class="mt-4">
+                        <h5>URL Analysis</h5>
+                        <div class="alert alert-{{ url_analysis.risk_level|yesno:'warning,info' }}">
+                            <strong>Risk Level:</strong> {{ url_analysis.risk_level|title }}
                         </div>
-                        <button type="submit" class="btn btn-primary">Add Comment</button>
-                    </form>
-                {% else %}
-                    <p class="mt-3">Please <a href="{% url 'login' %}">log in</a> to add a comment.</p>
-                {% endif %}
-            </div>
-
-            <div class="donation-section">
-                <h4>Support this Report</h4>
-                {% if user.is_authenticated %}
-                    <a href="{% url 'donate' report.id %}" class="btn btn-success">Donate</a>
-                {% else %}
-                    <p>Please <a href="{% url 'login' %}">log in</a> to make a donation.</p>
-                {% endif %}
-
-                {% if report.donation_set.all %}
-                    <h5 class="mt-4">Recent Donations</h5>
-                    <div class="list-group">
-                        {% for donation in report.donation_set.all|slice:":5" %}
-                            <div class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <p class="mb-1">
-                                            {% if donation.is_anonymous %}
-                                                Anonymous
-                                            {% else %}
-                                                {{ donation.user.email }}
-                                            {% endif %}
-                                            donated {{ donation.amount }} {{ donation.currency }}
-                                        </p>
-                                        {% if donation.message %}
-                                            <small class="text-muted">{{ donation.message }}</small>
+                        
+                        {% if url_analysis.warnings %}
+                        <div class="alert alert-warning">
+                            <h6>Warnings:</h6>
+                            <ul class="mb-0">
+                                {% for warning in url_analysis.warnings %}
+                                <li>{{ warning }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        {% if url_analysis.whois_info %}
+                        <div class="card mb-3">
+                            <div class="card-header">WHOIS Information</div>
+                            <div class="card-body">
+                                <p><strong>Registrar:</strong> {{ url_analysis.whois_info.registrar }}</p>
+                                <p><strong>Creation Date:</strong> {{ url_analysis.whois_info.creation_date }}</p>
+                                {% if url_analysis.whois_info.expiration_date %}
+                                <p><strong>Expiration Date:</strong> {{ url_analysis.whois_info.expiration_date }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if url_analysis.dns_records %}
+                        <div class="card mb-3">
+                            <div class="card-header">DNS Records</div>
+                            <div class="card-body">
+                                {% for record_type, records in url_analysis.dns_records.items %}
+                                <p><strong>{{ record_type }} Records:</strong></p>
+                                <ul>
+                                    {% for record in records %}
+                                    <li>{{ record }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if url_analysis.ip_address %}
+                        <div class="card mb-3">
+                            <div class="card-header">IP Information</div>
+                            <div class="card-body">
+                                <p><strong>IP Address:</strong> {{ url_analysis.ip_address }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <h5>Evidence</h5>
+                    {% if report.evidence.all %}
+                        <div class="row">
+                            {% for evidence in report.evidence.all %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6>{{ evidence.title }}</h6>
+                                        <p>{{ evidence.description }}</p>
+                                        {% if evidence.file %}
+                                        <a href="{{ evidence.file.url }}" class="btn btn-sm btn-primary" target="_blank">View File</a>
                                         {% endif %}
                                     </div>
-                                    <small class="text-muted">{{ donation.created_at|date:"F d, Y" }}</small>
                                 </div>
                             </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No evidence provided.</p>
+                    {% endif %}
+                </div>
             </div>
+            
+            {% if user.is_authenticated %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Add Evidence</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ evidence_form|crispy }}
+                        <button type="submit" class="btn btn-primary">Submit Evidence</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Report Details</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Status:</strong> {{ report.get_status_display }}</p>
+                    <p><strong>Type:</strong> {{ report.get_type_display }}</p>
+                    <p><strong>Views:</strong> {{ report.views }}</p>
+                    <p><strong>Last Updated:</strong> {{ report.updated_at|date:"F d, Y" }}</p>
+                </div>
+            </div>
+            
+            {% if user.is_authenticated %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Support the Reporter</h4>
+                </div>
+                <div class="card-body">
+                    <p>Help support the reporter by making a donation.</p>
+                    <a href="{% url 'donate' report.id %}" class="btn btn-success btn-block">Donate</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <p>Please <a href="{% url 'login' %}">log in</a> to support the reporter.</p>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
-
-<div class="modal fade" id="addEvidenceModal" tabindex="-1" aria-labelledby="addEvidenceModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addEvidenceModalLabel">Add Evidence</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="post" action="{% url 'add_evidence' report.id %}" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="title" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="title" name="title" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="file" class="form-label">File (optional)</label>
-                        <input type="file" class="form-control" id="file" name="file">
+<div class="comments-section mb-4">
+    <h4>Comments</h4>
+    {% if report.comments.all %}
+        <div class="list-group">
+            {% for comment in report.comments.all %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1">
+                                {{ comment.content }}
+                                {% if comment.is_verified %}
+                                    <span class="badge bg-success">Verified</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                            </p>
+                            <small class="text-muted">Posted by {{ comment.user.email }} on {{ comment.created_at|date:"F d, Y" }}</small>
+                        </div>
+                        {% if user.is_staff and not comment.is_verified %}
+                            <form method="post" action="{% url 'verify_comment' comment.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success">Verify</button>
+                            </form>
+                        {% endif %}
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit Evidence</button>
-                </div>
-            </form>
+            {% endfor %}
         </div>
-    </div>
+    {% else %}
+        <p class="text-muted">No comments yet.</p>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+        <form method="post" action="{% url 'add_comment' report.id %}" class="mt-3">
+            {% csrf_token %}
+            <div class="mb-3">
+                <textarea class="form-control" name="content" rows="3" placeholder="Add a comment..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Comment</button>
+        </form>
+    {% else %}
+        <p class="mt-3">Please <a href="{% url 'login' %}">log in</a> to add a comment.</p>
+    {% endif %}
 </div>
+
+{% if report.donation_set.all %}
+    <h5 class="mt-4">Recent Donations</h5>
+    <div class="list-group">
+        {% for donation in report.donation_set.all|slice:":5" %}
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1">
+                            {% if donation.is_anonymous %}
+                                Anonymous
+                            {% else %}
+                                {{ donation.user.email }}
+                            {% endif %}
+                            donated {{ donation.amount }} {{ donation.currency }}
+                        </p>
+                        {% if donation.message %}
+                            <small class="text-muted">{{ donation.message }}</small>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted">{{ donation.created_at|date:"F d, Y" }}</small>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
 {% endblock %}
 

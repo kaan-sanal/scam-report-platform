@@ -10,7 +10,7 @@
                 </div>
                 <div class="card-body">
                     <div class="text-end mb-3">
-                        <a href="{% url 'scam_websites' %}" class="btn btn-primary">Search Scam Websites</a>
+                        <a href="{% url 'submit_report' %}" class="btn btn-primary">Submit New Report</a>
                     </div>
                     
                     {% if reports %}
@@ -22,7 +22,7 @@
                                         <th>Type</th>
                                         <th>Status</th>
                                         <th>Reporter</th>
-                                        <th>Views</th>
+                                        <th>Submitted</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -37,15 +37,18 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                {% if report.reporter.is_anonymous or not report.reporter %}
-                                                    <span class="text-muted">Anonymous</span>
+                                                {% if report.reporter %}
+                                                    {{ report.reporter.username }}
                                                 {% else %}
-                                                    {{ report.reporter.email }}
+                                                    Anonymous
                                                 {% endif %}
                                             </td>
-                                            <td>{{ report.view_count }}</td>
+                                            <td>{{ report.submission_date }}</td>
                                             <td>
                                                 <a href="{% url 'view_report' report.id %}" class="btn btn-sm btn-info">View</a>
+                                                {% if user.is_authenticated and report.reporter == user %}
+                                                    <a href="{% url 'upload_evidence' report.id %}" class="btn btn-sm btn-success">Add Evidence</a>
+                                                {% endif %}
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -55,6 +58,7 @@
                     {% else %}
                         <div class="text-center">
                             <p>No public reports available yet.</p>
+                            <a href="{% url 'submit_report' %}" class="btn btn-primary">Submit Your First Report</a>
                         </div>
                     {% endif %}
                 </div>

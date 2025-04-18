@@ -31,28 +31,19 @@ def secure_page(request):
 @login_required
 def submit_report(request):
     if request.method == 'POST':
-        report_form = ScamReportForm(request.POST)
-        if report_form.is_valid():
-            report = report_form.save(commit=False)
+        form = ScamReportForm(request.POST, request.FILES)
+        if form.is_valid():
+            report = form.save(commit=False)
             report.reporter = request.user
-            
-            # Analyze URL if provided
-            if report.scam_url:
-                url_analysis = analyze_url(report.scam_url)
-                if 'error' not in url_analysis:
-                    report.domain_age = url_analysis.get('domain_age')
-                    report.domain_registrar = url_analysis.get('registrar')
-                    report.domain_country = url_analysis.get('country')
-                    report.is_blacklisted = url_analysis.get('is_blacklisted')
-                    report.blacklist_details = str(url_analysis.get('blacklist_details'))
-            
+            report.is_blacklisted = False
+            report.is_public = True
+            report.status = 'pending'
             report.save()
-            messages.success(request, 'Scam report submitted successfully!')
-            return redirect('view_report', report_id=report.id)
+            messages.success(request, 'Report submitted successfully!')
+            return redirect('my_reports')
     else:
-        report_form = ScamReportForm()
-    
-    return render(request, 'submit_report.html', {'form': report_form})
+        form = ScamReportForm()
+    return render(request, 'submit_report.html', {'form': form})
 
 @login_required
 def upload_evidence(request, report_id):
@@ -77,36 +68,31 @@ def upload_evidence(request, report_id):
 
 def view_report(request, report_id):
     report = get_object_or_404(ScamReport, id=report_id)
-    report.view_count += 1
+    
+    # Increment view count
+    report.views += 1
     report.save()
     
-    if request.method == 'POST':
-        if 'comment' in request.POST:
-            comment_form = CommentForm(request.POST)
-            if comment_form.is_valid():
-                comment = comment_form.save(commit=False)
-                comment.report = report
-                comment.user = request.user
-                comment.save()
-                messages.success(request, 'Your comments has been added successfully.')
-                return redirect('view_report', report_id=report.id)
-        elif 'evidence' in request.POST:
-            evidence_form = EvidenceForm(request.POST, request.FILES)
-            if evidence_form.is_valid():
-                evidence = evidence_form.save(commit=False)
-                evidence.report = report
-                evidence.user = request.user
-                evidence.save()
-                messages.success(request, 'Your evidence has been added successfully..')
-                return redirect('view_report', report_id=report.id)
+    # Analyze URL
+    url_analysis = analyze_url(report.scam_url)
+    
+    # Handle evidence submission
+    if request.method == 'POST' and request.user.is_authenticated:
+        evidence_form = EvidenceForm(request.POST, request.FILES)
+        if evidence_form.is_valid():
+            evidence = evidence_form.save(commit=False)
+            evidence.report = report
+            evidence.user = request.user
+            evidence.save()
+            messages.success(request, 'Evidence submitted successfully.')
+            return redirect('view_report', report_id=report.id)
     else:
-        comment_form = CommentForm()
         evidence_form = EvidenceForm()
     
     context = {
         'report': report,
-        'comment_form': comment_form,
         'evidence_form': evidence_form,
+        'url_analysis': url_analysis,
     }
     return render(request, 'view_report.html', context)
 
