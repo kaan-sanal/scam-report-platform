@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: scam-report-platform
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn scam_project.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        value: scam-report-platform.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: scam-report-db
+          property: connectionString
+
+databases:
+  - name: scam-report-db
+    databaseName: scam_report_db
+    user: scam_report_user
+    plan: free 
