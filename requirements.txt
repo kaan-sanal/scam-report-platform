@@ -30,3 +30,7 @@ typing_extensions==4.13.1
 tzdata==2025.2
 urllib3==2.3.0
 whois==1.20240129.2
+gunicorn==21.2.0
+whitenoise==6.6.0
+
+
