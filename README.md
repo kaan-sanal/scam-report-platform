@@ -117,4 +117,3 @@ If you need help or have questions:
 Thanks to all contributors and the Django community for making this project possible!
 
 ---
-# scam-report-platform
