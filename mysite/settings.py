@@ -10,7 +10,7 @@ SECRET_KEY = 'secret'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://scam-report-platform.onrender.com']
+ALLOWED_HOSTS = ['scam-report-platform.onrender.com']
 
 
 
