@@ -103,7 +103,21 @@ def my_reports(request):
 
 def public_reports(request):
     reports = ScamReport.objects.filter(is_public=True).order_by('-submission_date')
-    return render(request, 'public_reports.html', {'reports': reports})
+    
+    # Search functionality
+    search_query = request.GET.get('q')
+    if search_query:
+        reports = reports.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(report_type__icontains=search_query)
+        )
+    
+    context = {
+        'reports': reports,
+        'search_query': search_query
+    }
+    return render(request, 'public_reports.html', context)
 
 def scam_websites(request):
     query = request.GET.get('q', '')
