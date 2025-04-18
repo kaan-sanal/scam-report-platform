@@ -39,5 +39,4 @@ gunicorn==21.2.0
 whitenoise==6.6.0
 psycopg2-binary==2.9.9
 dj-database-url==2.1.0
-Pillow==10.2.0
-dnspython==2.7.0
+dnspython==2.7.0 
