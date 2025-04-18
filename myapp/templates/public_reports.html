@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Public Fraud Reports</h2>
+                </div>
+                <div class="card-body">
+                    <div class="text-end mb-3">
+                        <a href="{% url 'scam_websites' %}" class="btn btn-primary">Search Scam Websites</a>
+                    </div>
+                    
+                    {% if reports %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Reporter</th>
+                                        <th>Views</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for report in reports %}
+                                        <tr>
+                                            <td>{{ report.title }}</td>
+                                            <td>{{ report.get_report_type_display }}</td>
+                                            <td>
+                                                <span class="badge {% if report.status == 'pending' %}bg-warning{% elif report.status == 'verified' %}bg-success{% else %}bg-danger{% endif %}">
+                                                    {{ report.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if report.reporter.is_anonymous or not report.reporter %}
+                                                    <span class="text-muted">Anonymous</span>
+                                                {% else %}
+                                                    {{ report.reporter.email }}
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ report.view_count }}</td>
+                                            <td>
+                                                <a href="{% url 'view_report' report.id %}" class="btn btn-sm btn-info">View</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center">
+                            <p>No public reports available yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

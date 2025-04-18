@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Secure Page</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <h4 class="alert-heading">Welcome to the Secure Area!</h4>
+                        <p>This page can only be viewed by logged-in users.</p>
+                        <hr>
+                        <p class="mb-0">Thank you for being in the secure area.</p>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Your Reports</h5>
+                                    <p class="card-text">View and manage your fraud reports.</p>
+                                    <a href="{% url 'my_reports' %}" class="btn btn-primary">View My Reports</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">New Report</h5>
+                                    <p class="card-text">Create a new fraud report.</p>
+                                    <a href="{% url 'submit_report' %}" class="btn btn-success">Create Report</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'home' %}" class="btn btn-secondary">Return to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

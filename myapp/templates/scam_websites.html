@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Scam Reports</h2>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="mb-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" name="q" class="form-control" placeholder="Search..." value="{{ query }}">
+                            <select name="type" class="form-select">
+                                <option value="">All Types</option>
+                                <option value="investment" {% if selected_type == 'investment' %}selected{% endif %}>Investment Scam</option>
+                                <option value="shopping" {% if selected_type == 'shopping' %}selected{% endif %}>Shopping Scam</option>
+                                <option value="banking" {% if selected_type == 'banking' %}selected{% endif %}>Banking Scam</option>
+                                <option value="social" {% if selected_type == 'social' %}selected{% endif %}>Social Media Scam</option>
+                                <option value="other" {% if selected_type == 'other' %}selected{% endif %}>Other</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            {% if reports %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>URL</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports %}
+                            <tr>
+                                <td>{{ report.title }}</td>
+                                <td>{{ report.get_report_type_display }}</td>
+                                <td>{{ report.scam_url|truncatechars:30 }}</td>
+                                <td>
+                                    <span class="badge {% if report.status == 'verified' %}bg-success{% elif report.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ report.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ report.submission_date|date:"d.m.Y" }}</td>
+                                <td>
+                                    <a href="{% url 'view_report' report.id %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    No reports found matching your search criteria.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

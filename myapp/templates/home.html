@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2 text-center">
+            <h1 class="display-4 mb-4">Welcome to Secure Application</h1>
+            <p class="lead mb-5">Share and track fraud reports to help others avoid scams.</p>
+            
+            {% if user.is_authenticated %}
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">My Reports</h5>
+                                <p class="card-text">View and manage your submitted reports.</p>
+                                <a href="{% url 'my_reports' %}" class="btn btn-primary">View Reports</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">New Report</h5>
+                                <p class="card-text">Submit a new fraud report.</p>
+                                <a href="{% url 'submit_report' %}" class="btn btn-success">Create Report</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Secure Page</h5>
+                                <p class="card-text">Access the secure area of the application.</p>
+                                <a href="{% url 'secure_page' %}" class="btn btn-info">Go to Secure Page</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Public Reports</h5>
+                                <p class="card-text">Browse reports from other users.</p>
+                                <a href="{% url 'public_reports' %}" class="btn btn-secondary">View Public Reports</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Get Started</h5>
+                        <p class="card-text">Please log in or sign up to access the application features.</p>
+                        <div class="mt-3">
+                            <a href="{% url 'login' %}" class="btn btn-primary me-2">Login</a>
+                            <a href="{% url 'signup' %}" class="btn btn-success">Sign Up</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

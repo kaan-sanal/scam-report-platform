@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% if report %}
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">Donating to Report</h4>
+                </div>
+                <div class="card-body">
+                    <h5>{{ report.title }}</h5>
+                    <p class="text-muted">Submitted by: {% if report.reporter.is_anonymous %}Anonymous{% else %}{{ report.reporter }}{% endif %}</p>
+                    <p>{{ report.description|truncatewords:50 }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Make a Donation</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="donation-form">
+                        {% csrf_token %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.amount|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.currency|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">Card Information</h5>
+                            </div>
+                            <div class="card-body">
+                                {{ form.card_number|as_crispy_field }}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.expiry_date|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.cvc|as_crispy_field }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.is_anonymous }}
+                                <label class="form-check-label" for="{{ form.is_anonymous.id_for_label }}">
+                                    Make this donation anonymous
+                                </label>
+                            </div>
+                        </div>
+
+                        {{ form.message|as_crispy_field }}
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-heart me-2"></i>Make Donation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('donation-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const currentUrl = window.location.pathname;
+    
+    fetch(currentUrl, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: 'Thank You!',
+                text: 'Your donation has been processed successfully.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                window.location.href = '{% if report %}{% url "view_report" report_id=report.id %}{% else %}/{% endif %}';
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: data.error || 'There was an error processing your donation.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            title: 'Error',
+            text: 'There was an error processing your donation.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    });
+});
+</script>
+{% endblock %} 

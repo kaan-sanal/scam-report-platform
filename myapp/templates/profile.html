@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Profile Information</h3>
+                </div>
+                <div class="card-body">
+                    {% if profile %}
+                        <div class="mb-4">
+                            <h5>User Information</h5>
+                            <p><strong>E-posta:</strong> {{ user.email }}</p>
+                            <p><strong>Son Giriş:</strong> {{ profile.last_login_time|date:"d.m.Y H:i" }}</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>Security Information</h5>
+                            <p><strong>Last IP Address:</strong> {{ profile.last_ip }}</p>
+                            <p><strong>Last Location:</strong> {{ profile.last_location }}</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>Account Information</h5>
+                            <p><strong>Account Creation Date:</strong> {{ profile.created_at|date:"d.m.Y" }}</p>
+                            <p><strong>Last Update:</strong> {{ profile.updated_at|date:"d.m.Y H:i" }}</p>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            Profile information has not been created yet.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
